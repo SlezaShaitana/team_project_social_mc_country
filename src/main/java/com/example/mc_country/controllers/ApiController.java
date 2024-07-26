@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,12 +19,12 @@ public class ApiController {
 
     @GetMapping("/country")
     public ResponseEntity<List<CountryDto>> countries() {
-        return ResponseEntity.ok(geoService.getCountries());
+        return ResponseEntity.ok(geoService.getAllCountries());
     }
 
     @GetMapping("/country/{countryId}/city")
-    public ResponseEntity<List<CityDto>> cities(@PathVariable String countryId) {
-        return ResponseEntity.ok(geoService.getCities(countryId));
+    public ResponseEntity<List<CityDto>> cities(@PathVariable UUID countryId) {
+        return ResponseEntity.ok(geoService.getCitiesOfCountry(countryId));
     }
 
     @PutMapping("/load")
