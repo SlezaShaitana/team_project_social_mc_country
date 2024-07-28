@@ -6,10 +6,7 @@ spring:
 app:
   cache:
     cache-names:
-      - allCountries
-      - allCitiesOfCountry
+      - citiesOfCountry
     caches:
-      allCountries:
-        expiry: 60s
-      allCitiesOfCountry:
-        expiry: 60s
+      citiesOfCountry:
+        expiry: 1440m

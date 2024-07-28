@@ -1,8 +1,9 @@
 package com.example.mc_country.utils;
 
-import com.example.mc_country.data_hhApi.CountryData;
-import com.example.mc_country.dto.CityDto;
-import com.example.mc_country.dto.CountryDto;
+import com.example.mc_country.dto.HhApi.CountryDataFromHhApi;
+import com.example.mc_country.dto.response.CityDto;
+import com.example.mc_country.dto.response.CountryDto;
+import com.example.mc_country.exception.ResourceNotFoundException;
 import com.example.mc_country.feign.GeoClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,62 +20,43 @@ import java.util.concurrent.RecursiveTask;
 public class FullLoader extends RecursiveTask<List<CountryDto>> {
     private final List<Area> areas;
     private final GeoClient geoClient;
-    private Map<UUID, List<CityDto>> citiesOfCountry;
+    private Map<String, List<CityDto>> cities;
     @Getter
-    private static String error;
+    private static String error = "";
 
-    public FullLoader(List<Area> areas, GeoClient geoClient, Map<UUID, List<CityDto>> citiesOfCountry) {
+    public FullLoader(List<Area> areas, Map<String, List<CityDto>> cities, GeoClient geoClient) {
         this.areas = areas;
         this.geoClient = geoClient;
-        this.citiesOfCountry = citiesOfCountry;
+        this.cities = cities;
     }
 
     @Override
     protected List<CountryDto> compute() {
-        if (error != null){
-            return List.of();
-        }
-        List<CountryDto> countries = new ArrayList<>();
-        UUID countryId = UUID.randomUUID();
+        if (!error.isEmpty()) return List.of();
 
+        UUID countryId = UUID.randomUUID();
         String indexFromHhApi = "";
         try {
             indexFromHhApi = areas.get(0).getSearchParameters().getParameterMap().
                     entrySet().iterator().next().getValue().get(0);
         } catch (SearchException e) {
-            log.warn("Не получен индекс страны {}. Названия городов этой страны получить невозможно! " +
-                    "Error: {}", areas.get(0).getName(), e.getMessage());
             e.printStackTrace();
-            error = e.getMessage();
+            error = "Не получен индекс страны " + areas.get(0).getName() +
+                    ". Названия городов этой страны получить невозможно! Error: " +  e.getMessage();
+            return List.of();
         }
-
+        List<CountryDto> countries = new ArrayList<>();
         try {
-            CountryData countryData = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
-
-            List<String> titleCitiyList = new ArrayList<>();
-            List<CityDto> cities = new ArrayList<>();
-
-            countryData.getAreas().forEach(element -> getCitiesOfCountryData(element, countryId,
-                    titleCitiyList, cities));
-
-            CountryDto countryDto =
-                    new CountryDto(countryId, true, areas.get(0).getName(), titleCitiyList);
-            countries.add(countryDto);
-            citiesOfCountry.put(countryId, cities);
+             saveResults(countryId, indexFromHhApi, countries);
         }catch (Exception e){
             e.printStackTrace();
-            log.warn("Названия городов страны {} получить невозможно! " +
-                    "Error: {}", areas.get(0).getName(), e.getMessage());
-            error = e.getMessage();
+            error = "Названия городов страны " + areas.get(0).getName() +
+                    " получить невозможно! Error: " + e.getMessage();
+            return List.of();
         }
 
         if (areas.size() > 1){
-            List<FullLoader> taskList = new ArrayList<>();
-            for (int i = 1; i < areas.size(); i++){
-                FullLoader task = new FullLoader(List.of(areas.get(i)), geoClient, citiesOfCountry);
-                task.fork();
-                taskList.add(task);
-            }
+            List<FullLoader> taskList = createTasks();
             for (int i = 0; i < taskList.size(); i++) {
                 countries.addAll(taskList.get(i).join());
             }
@@ -82,23 +64,48 @@ public class FullLoader extends RecursiveTask<List<CountryDto>> {
         return countries;
     }
 
-    private void getCitiesOfCountryData(CountryData countryData, UUID countryId,
+    private void saveResults(UUID countryId, String indexFromHhApi, List<CountryDto> countries){
+        CountryDataFromHhApi countryDataFromHhApi = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
+
+        List<String> titleCitiyList = new ArrayList<>();
+        List<CityDto> citiesOfCountry = new ArrayList<>();
+
+        countryDataFromHhApi.getAreas().forEach(element -> getCitiesOfCountryData(element, countryId,
+                titleCitiyList, citiesOfCountry));
+
+        CountryDto countryDto =
+                new CountryDto(countryId, true, areas.get(0).getName(), titleCitiyList);
+        countries.add(countryDto);
+        cities.put(String.valueOf(countryId), citiesOfCountry);
+    }
+
+    private List<FullLoader> createTasks(){
+        List<FullLoader> taskList = new ArrayList<>();
+        for (int i = 1; i < areas.size(); i++){
+            FullLoader task = new FullLoader(List.of(areas.get(i)), cities, geoClient);
+            task.fork();
+            taskList.add(task);
+        }
+        return taskList;
+    }
+
+    private void getCitiesOfCountryData(CountryDataFromHhApi countryDataFromHhApi, UUID countryId,
                                         List<String> titleCitiesList, List<CityDto> cities){
 
-        if (countryData.getParentId() != null && countryData.getAreas().isEmpty()) {
-            String cityTitle = countryData.getName();
+        if (countryDataFromHhApi.getParentId() != null && countryDataFromHhApi.getAreas().isEmpty()) {
+            String cityTitle = countryDataFromHhApi.getName();
             titleCitiesList.add(cityTitle);
 
             CityDto city = new CityDto(UUID.randomUUID(), true, cityTitle, countryId);
             cities.add(city);
         }
-        if (countryData.getParentId() != null && !countryData.getAreas().isEmpty()){
-            countryData.getAreas().forEach(element ->
+        if (countryDataFromHhApi.getParentId() != null && !countryDataFromHhApi.getAreas().isEmpty()){
+            countryDataFromHhApi.getAreas().forEach(element ->
                     getCitiesOfCountryData(element, countryId, titleCitiesList, cities));
         }
     }
 
     public static void cleanError(){
-        error = null;
+        error = "";
     }
 }

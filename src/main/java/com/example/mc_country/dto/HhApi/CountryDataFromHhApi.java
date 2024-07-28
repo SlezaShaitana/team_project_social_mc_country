@@ -1,4 +1,4 @@
-package com.example.mc_country.data_hhApi;
+package com.example.mc_country.dto.HhApi;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
@@ -7,11 +7,11 @@ import java.util.List;
 
 
 @Data
-public class CountryData {
+public class CountryDataFromHhApi {
     private Long id;
     @JsonAlias({"parent_id"})
     private Long parentId;
     private String name;
-    private List<CountryData> areas;
+    private List<CountryDataFromHhApi> areas;
 
 }

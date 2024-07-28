@@ -1,8 +1,10 @@
 package com.example.mc_country.utils;
 
-import com.example.mc_country.data_hhApi.CountryData;
-import com.example.mc_country.dto.CityDto;
+import com.example.mc_country.dto.HhApi.CountryDataFromHhApi;
+import com.example.mc_country.dto.response.CityDto;
+import com.example.mc_country.exception.ResourceNotFoundException;
 import com.example.mc_country.feign.GeoClient;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -11,13 +13,14 @@ import java.util.UUID;
 
 @Slf4j
 public class GetterCities {
-
+    @Getter
+    private static String error = "";
 
     public static List<CityDto> getCities(UUID countryId, String indexFromHhApi, GeoClient geoClient){
         List<CityDto> cities = new ArrayList<>();
         try {
-            CountryData countryData = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
-            countryData.getAreas().forEach(element ->{
+            CountryDataFromHhApi countryDataFromHhApi = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
+            countryDataFromHhApi.getAreas().forEach(element ->{
                 getCitiesOfCountryData(cities, element, countryId);
             });
             if (cities.isEmpty()){
@@ -25,24 +28,29 @@ public class GetterCities {
             }
         }catch (Exception e){
             e.printStackTrace();
-            log.warn("Список городов страны с id: {} получить невозможно! " +
-                    "Error: {}", countryId, e.getMessage());
+            error = "Список городов страны с id: " + countryId +
+                    " получить невозможно! Error: " + e.getMessage();
+            return List.of();
         }
-
+        log.info("Запрос на получение списка городов страны с id: {} выполнен", countryId);
         return cities;
     }
 
-    private static void getCitiesOfCountryData(List<CityDto> cities, CountryData countryData, UUID countryId){
-        if (countryData.getParentId() != null && countryData.getAreas().isEmpty()){
+    private static void getCitiesOfCountryData(List<CityDto> cities, CountryDataFromHhApi countryDataFromHhApi, UUID countryId){
+        if (countryDataFromHhApi.getParentId() != null && countryDataFromHhApi.getAreas().isEmpty()){
             CityDto cityDto =
-                    new CityDto(UUID.randomUUID(), true, countryData.getName(),countryId);
+                    new CityDto(UUID.randomUUID(), true, countryDataFromHhApi.getName(),countryId);
 
             cities.add(cityDto);
         }
 
-        if (countryData.getParentId() != null && !countryData.getAreas().isEmpty()){
-            countryData.getAreas().forEach(element ->
+        if (countryDataFromHhApi.getParentId() != null && !countryDataFromHhApi.getAreas().isEmpty()){
+            countryDataFromHhApi.getAreas().forEach(element ->
                     getCitiesOfCountryData(cities, element, countryId));
         }
+    }
+
+    public static void cleanError(){
+        error = "";
     }
 }
