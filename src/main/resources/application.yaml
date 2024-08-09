@@ -1,6 +1,8 @@
 server:
   port: 8087
 spring:
+  application:
+    name: mc-country
   data:
     redis:
       host: localhost
@@ -12,3 +14,11 @@ app:
     caches:
       citiesOfCountry:
         expiry: 1440m
+eureka:
+  client:
+    enabled: true
+    serviceUrl:
+      defaultZone: http://localhost:8888/eureka/
+  instance:
+    hostname: localhost
+
