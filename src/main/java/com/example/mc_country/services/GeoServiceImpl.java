@@ -130,7 +130,7 @@ public class GeoServiceImpl implements GeoService{
             saveListInRedis(redisTemplate, key, value);
         }
         log.info("** Завершение загрузки данных ** {}", LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
-        return "Успех";
+        return "";
     }
 
 

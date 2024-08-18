@@ -1,5 +1,6 @@
 package com.example.mc_country.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class CountryDto implements Serializable{
     private UUID id;
+    @JsonProperty("isDeleted")
     private boolean isDeleted;
     private String title;
     private List<String> cities;
