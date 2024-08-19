@@ -1,0 +1,10 @@
+app:
+  cache:
+    cache-names:
+      - citiesOfCountry
+    caches:
+      citiesOfCountry:
+        expiry: 1440m
+eureka:
+  client:
+    enabled: false
