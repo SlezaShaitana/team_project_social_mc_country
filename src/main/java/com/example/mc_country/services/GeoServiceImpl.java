@@ -96,8 +96,7 @@ public class GeoServiceImpl implements GeoService{
             }
             return cities;
         }else {
-            throw new ResourceNotFoundException("Данные отсутствуют! Выполните GET-запрос " +
-                    "на получение списка стран или сделайте полную выгрузку PUT-запросом");
+            return GetterCities.getCities(UUID.fromString(countryId), "113", geoClient);
         }
     }
 
