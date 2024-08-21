@@ -35,7 +35,6 @@ public class GeoServiceImpl implements GeoService{
     private final GeoClient geoClient;
     private final RedisTemplate redisTemplate;
     private final String prefixKeyName = "Index_";
-    private Map<String, IndexCountry> indexes = new HashMap<>();
 
 
     @Override
@@ -57,7 +56,7 @@ public class GeoServiceImpl implements GeoService{
                     " Error: " + e.getMessage());
         }
 
-
+        Map<String, IndexCountry> indexes = new HashMap<>();
         List<CountryDto> countries = new  ForkJoinPool().invoke(
                 new GetterCountries(areas, indexes, geoClient));
 
@@ -84,8 +83,8 @@ public class GeoServiceImpl implements GeoService{
             List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
             log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
             return cities;
-        }else if (indexes.get(countryId) != null){
-            IndexCountry index = indexes.get(countryId);
+        }else if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId))){
+            IndexCountry index = (IndexCountry) redisTemplate.boundListOps(prefixKeyName + countryId).leftPop();
             log.info("Индекс страны с id: {} получен", countryId);
 
             List<CityDto> cities = GetterCities.getCities(UUID.fromString(countryId), index.getIndex(), geoClient);
