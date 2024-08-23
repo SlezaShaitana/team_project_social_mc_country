@@ -96,7 +96,7 @@ public class FullLoader extends RecursiveTask<List<CountryDto>> {
             String cityTitle = countryDataFromHhApi.getName();
             titleCitiesList.add(cityTitle);
 
-            CityDto city = new CityDto(UUID.randomUUID(), true, cityTitle, countryId);
+            CityDto city = new CityDto(UUID.randomUUID(), false, cityTitle, countryId);
             cities.add(city);
         }
         if (countryDataFromHhApi.getParentId() != null && !countryDataFromHhApi.getAreas().isEmpty()){
