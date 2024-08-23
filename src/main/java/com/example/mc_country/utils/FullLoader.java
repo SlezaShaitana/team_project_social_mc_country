@@ -74,7 +74,7 @@ public class FullLoader extends RecursiveTask<List<CountryDto>> {
                 titleCitiyList, citiesOfCountry));
 
         CountryDto countryDto =
-                new CountryDto(countryId, true, areas.get(0).getName(), titleCitiyList);
+                new CountryDto(countryId.toString(), true, areas.get(0).getName(), titleCitiyList);
         countries.add(countryDto);
         cities.put(String.valueOf(countryId), citiesOfCountry);
     }
