@@ -16,7 +16,7 @@ public class GetterCities {
     @Getter
     private static String error = "";
 
-    public static List<CityDto> getCities(String countryId, String indexFromHhApi, GeoClient geoClient){
+    public static List<CityDto> getCities(Integer countryId, String indexFromHhApi, GeoClient geoClient){
         List<CityDto> cities = new ArrayList<>();
         try {
             CountryDataFromHhApi countryDataFromHhApi = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
@@ -36,7 +36,7 @@ public class GetterCities {
         return cities;
     }
 
-    private static void getCitiesOfCountryData(List<CityDto> cities, CountryDataFromHhApi countryDataFromHhApi, String countryId){
+    private static void getCitiesOfCountryData(List<CityDto> cities, CountryDataFromHhApi countryDataFromHhApi, Integer countryId){
         if (countryDataFromHhApi.getParentId() != null && countryDataFromHhApi.getAreas().isEmpty()){
             CityDto cityDto =
                     new CityDto(UUID.randomUUID(), true, countryDataFromHhApi.getName(),countryId);

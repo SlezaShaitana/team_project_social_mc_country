@@ -68,33 +68,38 @@ public class GeoServiceImpl implements GeoService{
 
         saveIndexInRedis(indexes);
         log.info("Запрос на получение списка стран выполнен");
+        int i = 0;
+        for (CountryDto countryDto : countries){
+            countryDto.setId(i++);
+        }
         return countries;
     }
 
     @Override
     @Cacheable(cacheNames = AppCacheProperties.CacheNames.CITIES_OF_COUNTRY, key = "#countryId")
-    public List<CityDto> getCitiesOfCountry(String countryId) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId.toString()))){
-            List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
-            log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
-            return cities;
-        }
-
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId.toString()))){
-            IndexCountry index = (IndexCountry) redisTemplate.boundListOps(prefixKeyName + countryId).leftPop();
-            log.info("Индекс страны с id: {} получен", countryId);
-
-            List<CityDto> cities = GetterCities.getCities(countryId, index.getIndex(), geoClient);
-
-            if (!GetterCities.getError().isEmpty()){
-                String error = GetterCities.getError();
-                GetterCities.cleanError();
-                throw new ResourceNotFoundException(error);
-            }
-            return cities;
-        } else{
-            return List.of(new CityDto(UUID.randomUUID(), true,"Москва", countryId));
-        }
+    public List<CityDto> getCitiesOfCountry(Integer countryId) {
+//        if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId.toString()))){
+//            List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
+//            log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
+//            return cities;
+//        }
+//
+//        if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId.toString()))){
+//            IndexCountry index = (IndexCountry) redisTemplate.boundListOps(prefixKeyName + countryId).leftPop();
+//            log.info("Индекс страны с id: {} получен", countryId);
+//
+//            List<CityDto> cities = GetterCities.getCities(countryId, index.getIndex(), geoClient);
+//
+//            if (!GetterCities.getError().isEmpty()){
+//                String error = GetterCities.getError();
+//                GetterCities.cleanError();
+//                throw new ResourceNotFoundException(error);
+//            }
+//            return cities;
+//        } else{
+//            return List.of(new CityDto(UUID.randomUUID(), true,"Москва", countryId));
+//        }
+        return List.of(new CityDto(UUID.randomUUID(), true, "mm", 1));
     }
 
     @Override
