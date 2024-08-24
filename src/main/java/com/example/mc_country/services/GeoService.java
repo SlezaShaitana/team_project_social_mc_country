@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface GeoService {
     List<CountryDto> getAllCountries();
-    List<CityDto> getCitiesOfCountry(String countryId);
+    List<CityDto> getCitiesOfCountry(UUID countryId);
     String uploadData();
 }

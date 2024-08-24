@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class ApiController {
     }
 
     @GetMapping("/country/{countryId}/city")
-    public List<CityDto> cities(@PathVariable String countryId) {
+    public List<CityDto> cities(@PathVariable UUID countryId) {
         return geoService.getCitiesOfCountry(countryId);
     }
 
