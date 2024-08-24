@@ -83,7 +83,7 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
         List<String> cities = new ArrayList<>();
         countryDataFromHhApi.getAreas().forEach(element -> getCitiesOfCountryData(element, cities));
 
-        return new CountryDto(null, true, areas.get(0).getName(), cities);
+        return new CountryDto(countryId, true, areas.get(0).getName(), cities);
     }
 
 

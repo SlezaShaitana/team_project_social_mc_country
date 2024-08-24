@@ -4,10 +4,10 @@ import com.example.mc_country.dto.response.CityDto;
 import com.example.mc_country.dto.response.CountryDto;
 import com.example.mc_country.services.GeoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class ApiController {
     }
 
     @GetMapping("/country/{countryId}/city")
-    public List<CityDto> cities(@PathVariable Integer countryId) {
+    public List<CityDto> cities(@PathVariable String countryId) {
         return geoService.getCitiesOfCountry(countryId);
     }
 

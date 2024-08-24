@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CountryDto implements Serializable{
-    private Integer id;
+    private UUID id;
     @JsonProperty("isDeleted")
     private boolean isDeleted;
     private String title;
