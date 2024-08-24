@@ -1,6 +1,7 @@
 package com.example.mc_country.controllers;
 
 import com.example.mc_country.dto.response.CityDto;
+import com.example.mc_country.dto.response.CityDtoList;
 import com.example.mc_country.dto.response.CountryDto;
 import com.example.mc_country.services.GeoService;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,11 @@ public class ApiController {
     }
 
     @GetMapping("/country/{countryId}/city")
-    public List<CityDto> cities(@PathVariable UUID countryId) {
-        return geoService.getCitiesOfCountry(countryId);
+    public CityDtoList cities(@PathVariable UUID countryId) {
+        List<CityDto> cities = geoService.getCitiesOfCountry(countryId);
+        CityDtoList list = new CityDtoList();
+        list.setCities(cities);
+        return list;
     }
 
     @PutMapping("/load")
