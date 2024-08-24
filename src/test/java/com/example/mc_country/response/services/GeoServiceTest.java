@@ -94,7 +94,7 @@ public class GeoServiceTest extends AbstractRedisTest {
             }
             case "получение городов" -> {
                 String countryId = country.getId().toString();
-                geoService.getCitiesOfCountry(countryId);
+                geoService.getCitiesOfCountry(UUID.fromString(countryId));
                 Mockito.verify(geoClient, Mockito.times(1)).getCountryByIdCountryOfHhApi("1");
                 assertTrue(redisTemplate.keys("*").size() == countKeys - 2);
             }
@@ -111,9 +111,9 @@ public class GeoServiceTest extends AbstractRedisTest {
                 assertThrows(ResourceNotFoundException.class, () -> geoService.getAllCountries());
             }
             case "получение городов" -> {
-                assertThrows(ResourceNotFoundException.class, () -> geoService.getCitiesOfCountry("jllk"));
+//                assertThrows(ResourceNotFoundException.class, () -> geoService.getCitiesOfCountry("jllk"));
                 assertThrows(ResourceNotFoundException.class, () -> geoService.getCitiesOfCountry(UUID
-                        .randomUUID().toString()));
+                        .randomUUID()));
             }
             case "полная загрузка" ->{
                 doThrow(Exception.class).when(geoClient);
@@ -140,7 +140,7 @@ public class GeoServiceTest extends AbstractRedisTest {
                     String redisKey = "Index_" + countryId;
                     redisTemplate.opsForList().leftPush(redisKey,index);
                     doThrow(Exception.class).when(geoClient);
-                    assertThrows(ResourceNotFoundException.class, () -> geoService.getCitiesOfCountry(countryId));
+                    assertThrows(ResourceNotFoundException.class, () -> geoService.getCitiesOfCountry(UUID.fromString(countryId)));
                 }case "GetterCountries" ->{
                     Mockito.when(geoClient.getCountries()).thenReturn(areas);
                     assertThrows(ResourceNotFoundException.class, () -> geoService.uploadData());
