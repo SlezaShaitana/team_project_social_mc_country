@@ -18,6 +18,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,7 +64,7 @@ public class ApiControllerTest extends GetCountriesAndCities {
     public void whenGetCities_thenReturnAllCitiesOfCountry(String countryId) throws Exception{
         switch (countryId){
             case countryOneId -> {
-                Mockito.when(geoService.getCitiesOfCountry(countryOneId)).thenReturn(getCities());
+                Mockito.when(geoService.getCitiesOfCountry(UUID.fromString(countryOneId))).thenReturn(getCities());
 
                 String actualResponse = mockMvc.perform(
                         get("/api/v1/geo/country/" + countryOneId + "/city"))
@@ -74,12 +76,12 @@ public class ApiControllerTest extends GetCountriesAndCities {
                 String expectedResponse = StringTestUtils.readStringFromResource(
                         "response/get_cities_of_country.json");
 
-                Mockito.verify(geoService, Mockito.times(1)).getCitiesOfCountry(countryOneId);
+                Mockito.verify(geoService, Mockito.times(1)).getCitiesOfCountry(UUID.fromString(countryOneId));
 
                 JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
             }
             case errorId -> {
-                Mockito.when(geoService.getCitiesOfCountry(errorId))
+                Mockito.when(geoService.getCitiesOfCountry(UUID.fromString(errorId)))
                         .thenThrow(new ResourceNotFoundException("Введенное значение " +
                                 errorId + " не соответствует типу UUID!"));
                 var response = mockMvc.perform(get("/api/v1/geo/country/" + errorId + "/city"))
@@ -92,7 +94,7 @@ public class ApiControllerTest extends GetCountriesAndCities {
                 String expectedResponse = StringTestUtils.readStringFromResource(
                         "response/get_cities_of_country_by_exception_id.json");
 
-                Mockito.verify(geoService, Mockito.times(1)).getCitiesOfCountry(errorId);
+                Mockito.verify(geoService, Mockito.times(1)).getCitiesOfCountry(UUID.fromString(errorId));
 
                 JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
             }
