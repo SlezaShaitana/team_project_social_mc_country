@@ -73,7 +73,7 @@ public class GeoServiceImpl implements GeoService{
 
     @Override
     @Cacheable(cacheNames = AppCacheProperties.CacheNames.CITIES_OF_COUNTRY, key = "#countryId")
-    public List<CityDto> getCitiesOfCountry(UUID countryId) {
+    public List<CityDto> getCitiesOfCountry(String countryId) {
         if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId))){
             List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
             log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);

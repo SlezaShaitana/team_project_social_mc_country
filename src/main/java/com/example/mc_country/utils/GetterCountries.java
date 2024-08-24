@@ -36,7 +36,7 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
         if (!error.isEmpty()) return List.of();
 
         List<CountryDto> countries = new ArrayList<>();
-        UUID countryId = UUID.randomUUID();
+        String countryId = UUID.randomUUID().toString();
         String indexFromHhApi = "";
         try {
             indexFromHhApi = areas.get(0).getSearchParameters().getParameterMap().
@@ -77,7 +77,7 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
         }
     }
 
-    private CountryDto createCountryDto (String indexFromHhApi, UUID countryId){
+    private CountryDto createCountryDto (String indexFromHhApi, String countryId){
         CountryDataFromHhApi countryDataFromHhApi = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
 
         List<String> cities = new ArrayList<>();
