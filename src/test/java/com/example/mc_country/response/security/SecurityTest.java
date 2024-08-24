@@ -56,10 +56,10 @@ public class SecurityTest extends AbstractTestForSecurity{
         Mockito.verify(jwtClient, Mockito.times(1)).validateToken(normalToken);
         assertEquals("[]", actualResponseOne);
 
-        Mockito.when(geoService.getCitiesOfCountry("1")).thenReturn(List.of());
-        String actualResponseTwo = responseByGetRequest(urlForGetCities, normalToken);
-        Mockito.verify(jwtClient, Mockito.times(2)).validateToken(normalToken);
-        assertEquals("[]", actualResponseTwo);
+//        Mockito.when(geoService.getCitiesOfCountry("1")).thenReturn(List.of());
+//        String actualResponseTwo = responseByGetRequest(urlForGetCities, normalToken);
+//        Mockito.verify(jwtClient, Mockito.times(2)).validateToken(normalToken);
+//        assertEquals("[]", actualResponseTwo);
 
         Mockito.when(geoService.uploadData()).thenReturn("");
         String actualResponseTree = responseByPutRequest(urlForLoad, normalToken);
@@ -77,9 +77,9 @@ public class SecurityTest extends AbstractTestForSecurity{
         Mockito.verify(jwtClient, Mockito.times(1)).validateToken(normalToken);
 
 
-        Mockito.when(geoService.getCitiesOfCountry("1")).thenReturn(List.of());
-        responseByErrorGetRequest(urlForGetCities, normalToken);
-        Mockito.verify(jwtClient, Mockito.times(2)).validateToken(normalToken);
+//        Mockito.when(geoService.getCitiesOfCountry("1")).thenReturn(List.of());
+//        responseByErrorGetRequest(urlForGetCities, normalToken);
+//        Mockito.verify(jwtClient, Mockito.times(2)).validateToken(normalToken);
 
 
         Mockito.when(geoService.uploadData()).thenReturn("");

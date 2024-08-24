@@ -4,9 +4,10 @@ import com.example.mc_country.dto.response.CityDto;
 import com.example.mc_country.dto.response.CountryDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface GeoService {
     List<CountryDto> getAllCountries();
-    List<CityDto> getCitiesOfCountry(String countryId);
+    List<CityDto> getCitiesOfCountry(UUID countryId);
     String uploadData();
 }
