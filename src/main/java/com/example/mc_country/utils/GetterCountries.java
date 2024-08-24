@@ -36,12 +36,12 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
         if (!error.isEmpty()) return List.of();
 
         List<CountryDto> countries = new ArrayList<>();
-        UUID countryId = UUID.randomUUID();
+        String countryId = String.valueOf(UUID.randomUUID());
         String indexFromHhApi = "";
         try {
             indexFromHhApi = areas.get(0).getSearchParameters().getParameterMap().
                     entrySet().iterator().next().getValue().get(0);
-           indexes.put(String.valueOf(countryId), new IndexCountry(indexFromHhApi));
+           indexes.put(countryId, new IndexCountry(indexFromHhApi));
         } catch (SearchException e) {
             e.printStackTrace();
             error = "Не получен индекс страны " + areas.get(0).getName()
@@ -77,7 +77,7 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
         }
     }
 
-    private CountryDto createCountryDto (String indexFromHhApi, UUID countryId){
+    private CountryDto createCountryDto (String indexFromHhApi, String countryId){
         CountryDataFromHhApi countryDataFromHhApi = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
 
         List<String> cities = new ArrayList<>();

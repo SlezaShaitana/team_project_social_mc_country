@@ -22,7 +22,7 @@ public class ApiController {
     }
 
     @GetMapping("/country/{countryId}/city")
-    public List<CityDto> cities(@PathVariable UUID countryId) {
+    public List<CityDto> cities(@PathVariable String countryId) {
         return geoService.getCitiesOfCountry(countryId);
     }
 

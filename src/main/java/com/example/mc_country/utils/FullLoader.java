@@ -34,7 +34,7 @@ public class FullLoader extends RecursiveTask<List<CountryDto>> {
     protected List<CountryDto> compute() {
         if (!error.isEmpty()) return List.of();
 
-        UUID countryId = UUID.randomUUID();
+        String countryId = String.valueOf(UUID.randomUUID());
         String indexFromHhApi = "";
         try {
             indexFromHhApi = areas.get(0).getSearchParameters().getParameterMap().
@@ -64,7 +64,7 @@ public class FullLoader extends RecursiveTask<List<CountryDto>> {
         return countries;
     }
 
-    private void saveResults(UUID countryId, String indexFromHhApi, List<CountryDto> countries){
+    private void saveResults(String countryId, String indexFromHhApi, List<CountryDto> countries){
         CountryDataFromHhApi countryDataFromHhApi = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
 
         List<String> titleCitiyList = new ArrayList<>();
@@ -89,14 +89,14 @@ public class FullLoader extends RecursiveTask<List<CountryDto>> {
         return taskList;
     }
 
-    private void getCitiesOfCountryData(CountryDataFromHhApi countryDataFromHhApi, UUID countryId,
+    private void getCitiesOfCountryData(CountryDataFromHhApi countryDataFromHhApi, String countryId,
                                         List<String> titleCitiesList, List<CityDto> cities){
 
         if (countryDataFromHhApi.getParentId() != null && countryDataFromHhApi.getAreas().isEmpty()) {
             String cityTitle = countryDataFromHhApi.getName();
             titleCitiesList.add(cityTitle);
 
-            CityDto city = new CityDto(countryId, true, cityTitle, countryId);
+            CityDto city = new CityDto(UUID.randomUUID(), true, cityTitle, countryId);
             cities.add(city);
         }
         if (countryDataFromHhApi.getParentId() != null && !countryDataFromHhApi.getAreas().isEmpty()){

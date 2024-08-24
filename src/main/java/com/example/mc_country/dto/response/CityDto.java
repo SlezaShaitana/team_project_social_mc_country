@@ -16,5 +16,5 @@ public class CityDto implements Serializable{
     @JsonProperty("isDeleted")
     private boolean isDeleted;
     private String title;
-    private UUID countryId;
+    private String countryId;
 }
