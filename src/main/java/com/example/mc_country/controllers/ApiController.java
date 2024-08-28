@@ -21,8 +21,8 @@ public class ApiController {
         return geoService.getAllCountries();
     }
 
-    @GetMapping("/country/{CountryId}/city")
-    public List<CityDto> cities(@PathVariable(name = "CountryId") String countryId) {
+    @GetMapping("/country/{countryId}/city")
+    public List<CityDto> cities(@PathVariable String countryId) {
         return geoService.getCitiesOfCountry(countryId);
     }
 
