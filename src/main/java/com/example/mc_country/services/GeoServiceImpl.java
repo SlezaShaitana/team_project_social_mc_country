@@ -72,7 +72,6 @@ public class GeoServiceImpl implements GeoService{
     }
 
     @Override
-    @Cacheable(cacheNames = AppCacheProperties.CacheNames.CITIES_OF_COUNTRY, key = "#countryId")
     public List<CityDto> getCitiesOfCountry(String countryId) {
         return GetterCities.getCities(UUID.fromString(countryId), "113", geoClient);
 //        try {
