@@ -7,9 +7,6 @@ import com.example.mc_country.dto.response.CountryDto;
 import com.example.mc_country.dto.redis.RedisKeyName;
 import com.example.mc_country.exception.ResourceNotFoundException;
 import com.example.mc_country.feign.GeoClient;
-import com.example.mc_country.utils.FullLoader;
-import com.example.mc_country.utils.GetterCities;
-import com.example.mc_country.utils.GetterCountries;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
@@ -52,7 +49,6 @@ public class GeoServiceImpl implements GeoService{
                                 .build()))
                         .build()
                 );
-        ));
 //        String redisKey = String.valueOf(RedisKeyName.Countries_List);
 //        if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))){
 //            List<CountryDto> countries = (List<CountryDto>) redisTemplate.boundListOps(redisKey).leftPop();
