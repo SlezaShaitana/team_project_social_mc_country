@@ -96,7 +96,7 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
                     String.valueOf(UUID.randomUUID()),
                     true,
                     countryDataFromHhApi.getName(),
-                    countryId
+                    UUID.fromString(countryId)
             ));
         }
         if (countryDataFromHhApi.getParentId() != null && !countryDataFromHhApi.getAreas().isEmpty()){
