@@ -41,7 +41,7 @@ public class GeoServiceImpl implements GeoService{
     public List<CountryDto> getAllCountries() {
         String redisKey = String.valueOf(RedisKeyName.Countries_List);
         if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))){
-            List<CountryDto> countries = (List<CountryDto>) redisTemplate.boundListOps(redisKey).leftPop();
+            List<CountryDto> countries = (List<CountryDto>) redisTemplate.boundSetOps(redisKey).pop();
             log.info("Выгрузка стран из Redis завершилась успешно");
             return countries;
         }
@@ -74,26 +74,32 @@ public class GeoServiceImpl implements GeoService{
     @Override
     @Cacheable(cacheNames = AppCacheProperties.CacheNames.CITIES_OF_COUNTRY, key = "#countryId")
     public List<CityDto> getCitiesOfCountry(String countryId) {
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId))){
-                List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
-                log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
-                return cities;
-            }else if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId))){
-                IndexCountry index = (IndexCountry) redisTemplate.boundListOps(prefixKeyName + countryId).leftPop();
-                log.info("Индекс страны с id: {} получен", countryId);
+        log.info(prefixKeyName + "{}", countryId + "!!");
+        Set<String> keys = redisTemplate.keys("*");
+        for (String key : keys){
+                log.info(key);
+        }
 
-                List<CityDto> cities = GetterCities.getCities(countryId, index.getIndex(), geoClient);
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId))){
+            List<CityDto> cities = (List<CityDto>) redisTemplate.boundSetOps(prefixKeyName + countryId).pop();
+            log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
+            return cities;
+        }else if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId))){
+            IndexCountry index = (IndexCountry) redisTemplate.boundSetOps(prefixKeyName + countryId).pop();
+            log.info("Индекс страны с id: {} получен", countryId);
 
-                if (!GetterCities.getError().isEmpty()){
-                    String error = GetterCities.getError();
-                    GetterCities.cleanError();
-                    throw new ResourceNotFoundException(error);
-                }
-                return cities;
-            }else {
-                throw new ResourceNotFoundException("Данные отсутствуют! Выполните GET-запрос " +
-                        "на получение списка стран или сделайте полную выгрузку PUT-запросом");
+            List<CityDto> cities = GetterCities.getCities(countryId, index.getIndex(), geoClient);
+
+            if (!GetterCities.getError().isEmpty()){
+                String error = GetterCities.getError();
+                GetterCities.cleanError();
+                throw new ResourceNotFoundException(error);
             }
+            return cities;
+        }else {
+            throw new ResourceNotFoundException("Данные отсутствуют! Выполните GET-запрос " +
+                    "на получение списка стран или сделайте полную выгрузку PUT-запросом");
+        }
     }
 
     @Override
@@ -133,7 +139,7 @@ public class GeoServiceImpl implements GeoService{
 
     private void saveListInRedis(RedisTemplate redisTemplate, String keyName, List data){
         String redisKey = String.valueOf(keyName);
-        redisTemplate.opsForList().leftPush(redisKey,data);
+        redisTemplate.opsForSet().add(redisKey,data);
         redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
     }
 
@@ -141,7 +147,7 @@ public class GeoServiceImpl implements GeoService{
         for (Map.Entry index : indexes.entrySet()){
             String key = prefixKeyName + index.getKey();
             IndexCountry value = (IndexCountry) index.getValue();
-            redisTemplate.opsForList().leftPush(key,value);
+            redisTemplate.opsForSet().add(key,value);
             redisTemplate.expire(key, 1, TimeUnit.DAYS);
         }
     }
