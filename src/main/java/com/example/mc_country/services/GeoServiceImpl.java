@@ -70,7 +70,6 @@ public class GeoServiceImpl implements GeoService{
         }
 
         saveIndexInRedis(indexes);
-        saveListInRedis(redisTemplate, String.valueOf(RedisKeyName.Countries_List), countries);
         log.info("Запрос на получение списка стран выполнен");
         return countries;
     }
