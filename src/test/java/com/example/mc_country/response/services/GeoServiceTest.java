@@ -93,7 +93,7 @@ public class GeoServiceTest extends AbstractRedisTest {
                 assertTrue(redisTemplate.keys("*").size() == countKeys - 1);
             }
             case "получение городов" -> {
-                String countryId = country.getId().toString();
+                String countryId = country.getCountryId();
                 geoService.getCitiesOfCountry(countryId);
                 Mockito.verify(geoClient, Mockito.times(1)).getCountryByIdCountryOfHhApi("1");
                 assertTrue(redisTemplate.keys("*").size() == countKeys - 1);
