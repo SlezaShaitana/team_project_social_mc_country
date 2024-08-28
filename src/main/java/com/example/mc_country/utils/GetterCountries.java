@@ -39,7 +39,6 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
 
         List<CountryDto> countries = new ArrayList<>();
         String countryId = String.valueOf(UUID.randomUUID());
-        log.info(countryId);
         String indexFromHhApi = "";
         try {
             indexFromHhApi = areas.get(0).getSearchParameters().getParameterMap().
