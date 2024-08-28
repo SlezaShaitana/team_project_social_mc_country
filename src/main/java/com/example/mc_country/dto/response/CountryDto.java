@@ -16,6 +16,6 @@ public class CountryDto implements Serializable{
     @JsonProperty("isDeleted")
     private boolean isDeleted;
     private String title;
-    private List<City> cities;
+    private List<CityDto> cities;
 
 }
