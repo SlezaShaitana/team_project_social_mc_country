@@ -86,7 +86,6 @@ public class GeoServiceImpl implements GeoService{
             }else if (key.equals(prefixKeyName + countryId)){
                 IndexCountry index = (IndexCountry) redisTemplate.boundSetOps(prefixKeyName + countryId).pop();
                 log.info("Индекс страны с id: {} получен", countryId);
-                redisTemplate.opsForSet().add(prefixKeyName + countryId, index);
 
                 List<CityDto> cities = GetterCities.getCities(countryId, index.getIndex(), geoClient);
 
