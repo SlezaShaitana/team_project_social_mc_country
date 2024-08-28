@@ -2,11 +2,10 @@ package com.example.mc_country.utils;
 
 import com.example.mc_country.dto.HhApi.CountryDataFromHhApi;
 import com.example.mc_country.dto.redis.IndexCountry;
-import com.example.mc_country.dto.response.CityDto;
+import com.example.mc_country.dto.response.City;
 import com.example.mc_country.dto.response.CountryDto;
-import com.example.mc_country.exception.ResourceNotFoundException;
+import com.example.mc_country.dto.response.CountryId;
 import com.example.mc_country.feign.GeoClient;
-import com.example.mc_country.services.GeoServiceImpl;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import ru.yaal.project.hhapi.dictionary.entry.entries.area.Area;
@@ -82,21 +81,21 @@ public class GetterCountries extends RecursiveTask<List<CountryDto>> {
     private CountryDto createCountryDto (String indexFromHhApi, String countryId){
         CountryDataFromHhApi countryDataFromHhApi = geoClient.getCountryByIdCountryOfHhApi(indexFromHhApi);
 
-        List<CityDto> cities = new ArrayList<>();
+        List<City> cities = new ArrayList<>();
         countryDataFromHhApi.getAreas().forEach(element -> getCitiesOfCountryData(element, cities, countryId));
 
         return new CountryDto(countryId, true, areas.get(0).getName(), cities);
     }
 
 
-    private void getCitiesOfCountryData(CountryDataFromHhApi countryDataFromHhApi, List<CityDto> cities,
+    private void getCitiesOfCountryData(CountryDataFromHhApi countryDataFromHhApi, List<City> cities,
                                         String countryId){
         if (countryDataFromHhApi.getParentId() != null && countryDataFromHhApi.getAreas().isEmpty()) {
-            cities.add(new CityDto(
+            cities.add(new City(
                     String.valueOf(UUID.randomUUID()),
                     true,
                     countryDataFromHhApi.getName(),
-                    new Object()
+                    new CountryId(countryId)
             ));
         }
         if (countryDataFromHhApi.getParentId() != null && !countryDataFromHhApi.getAreas().isEmpty()){
