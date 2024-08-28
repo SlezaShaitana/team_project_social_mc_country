@@ -34,7 +34,6 @@ public class GeoServiceImpl implements GeoService{
     private final GeoClient geoClient;
     private final RedisTemplate redisTemplate;
     private final String prefixKeyName = "Index_";
-    public static Map<UUID, String> indexes;
 
 
 
@@ -57,17 +56,17 @@ public class GeoServiceImpl implements GeoService{
                     " Error: " + e.getMessage());
         }
 
-        indexes = new HashMap<>();
+        Map<String, IndexCountry> indexes = new HashMap<>();
         List<CountryDto> countries = new  ForkJoinPool().invoke(
-                new GetterCountries(areas, geoClient));
+                new GetterCountries(areas, geoClient, indexes));
 
         if (!GetterCountries.getError().isEmpty()){
             String error = GetterCountries.getError();
             GetterCountries.cleanError();
-            indexes = new HashMap<>();
             throw new ResourceNotFoundException(error);
         }
 
+        saveIndexInRedis(indexes);
         log.info("Запрос на получение списка стран выполнен");
         return countries;
     }
@@ -75,15 +74,15 @@ public class GeoServiceImpl implements GeoService{
     @Override
     @Cacheable(cacheNames = AppCacheProperties.CacheNames.CITIES_OF_COUNTRY, key = "#countryId")
     public List<CityDto> getCitiesOfCountry(String countryId) {
-        try {
-            UUID id = UUID.fromString(countryId);
-
             if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId))){
                 List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
                 log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
                 return cities;
-            }else if (indexes.containsKey(id)){
-                List<CityDto> cities = GetterCities.getCities(UUID.fromString(countryId), indexes.get(id), geoClient);
+            }else if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId))){
+                IndexCountry index = (IndexCountry) redisTemplate.boundListOps(prefixKeyName + countryId).leftPop();
+                log.info("Индекс страны с id: {} получен", countryId);
+
+                List<CityDto> cities = GetterCities.getCities(countryId, index.getIndex(), geoClient);
 
                 if (!GetterCities.getError().isEmpty()){
                     String error = GetterCities.getError();
@@ -95,9 +94,6 @@ public class GeoServiceImpl implements GeoService{
                 throw new ResourceNotFoundException("Данные отсутствуют! Выполните GET-запрос " +
                         "на получение списка стран или сделайте полную выгрузку PUT-запросом");
             }
-        }catch (Exception e){
-            throw new ResourceNotFoundException("Введенное значение " + countryId + " не соответствует типу UUID!");
-        }
     }
 
     @Override
@@ -114,14 +110,12 @@ public class GeoServiceImpl implements GeoService{
                     " Error: " + e.getMessage());
         }
 
-        indexes = new HashMap<>();
+        Map<String, IndexCountry> indexes = new HashMap<>();
         List<CountryDto> countries = new  ForkJoinPool().invoke(
-                new GetterCountries(areas, geoClient));
-        indexes = new HashMap<>();
+                new GetterCountries(areas, geoClient, indexes));
         if (!GetterCountries.getError().isEmpty()){
             String error = GetterCountries.getError();
             GetterCountries.cleanError();
-            indexes = new HashMap<>();
             throw new ResourceNotFoundException(error);
         }
 
