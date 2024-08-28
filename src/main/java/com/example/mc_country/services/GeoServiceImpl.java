@@ -97,8 +97,7 @@ public class GeoServiceImpl implements GeoService{
                 return cities;
             }
         }
-        throw new ResourceNotFoundException("Данные отсутствуют! Выполните GET-запрос " +
-                "на получение списка стран или сделайте полную выгрузку PUT-запросом");
+        return null;
     }
 
     @Override
