@@ -39,7 +39,7 @@ public class GetterCities {
     private static void getCitiesOfCountryData(List<CityDto> cities, CountryDataFromHhApi countryDataFromHhApi, String countryId){
         if (countryDataFromHhApi.getParentId() != null && countryDataFromHhApi.getAreas().isEmpty()){
             CityDto cityDto =
-                    new CityDto(String.valueOf(UUID.randomUUID()), true, countryDataFromHhApi.getName(),UUID.fromString(countryId));
+                    new CityDto(String.valueOf(UUID.randomUUID()), true, countryDataFromHhApi.getName(),countryId);
 
             cities.add(cityDto);
         }

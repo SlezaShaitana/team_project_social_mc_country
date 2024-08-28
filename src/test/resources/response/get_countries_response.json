@@ -2,7 +2,21 @@
   {
     "id": "8726fb71-48e2-4140-8da7-513bdfd63395",
     "title": "Country 8726fb71-48e2-4140-8da7-513bdfd63395",
-    "cities": ["City 2a7071a8-f9f0-4423-a6f5-f723d9a71013", "City 924d6bad-0f7c-42dd-82fe-7cda182b6dfa"],
+    "cities":
+    [
+      {
+        "id": "2a7071a8-f9f0-4423-a6f5-f723d9a71013",
+        "title": "City 2a7071a8-f9f0-4423-a6f5-f723d9a71013",
+        "countryId": "8726fb71-48e2-4140-8da7-513bdfd63395",
+        "isDeleted": true
+      },
+      {
+        "id": "924d6bad-0f7c-42dd-82fe-7cda182b6dfa",
+        "title": "City 924d6bad-0f7c-42dd-82fe-7cda182b6dfa",
+        "countryId": "8726fb71-48e2-4140-8da7-513bdfd63395",
+        "isDeleted": true
+      }
+    ],
     "isDeleted": true
   },
   {
