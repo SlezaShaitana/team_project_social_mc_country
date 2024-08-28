@@ -72,33 +72,33 @@ public class GeoServiceImpl implements GeoService{
     }
 
     @Override
-    @Cacheable(cacheNames = AppCacheProperties.CacheNames.CITIES_OF_COUNTRY, key = "#countryId")
     public List<CityDto> getCitiesOfCountry(String countryId) {
-        try {
-            UUID id = UUID.fromString(countryId);
-        }catch (Exception e){
-            throw new ResourceNotFoundException("Введенное значение " + countryId + " не соответствует типу UUID!");
-        }
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId))){
-            List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
-            log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
-            return cities;
-        }else if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId))){
-            IndexCountry index = (IndexCountry) redisTemplate.boundListOps(prefixKeyName + countryId).leftPop();
-            log.info("Индекс страны с id: {} получен", countryId);
-
-            List<CityDto> cities = GetterCities.getCities(UUID.fromString(countryId), index.getIndex(), geoClient);
-
-            if (!GetterCities.getError().isEmpty()){
-                String error = GetterCities.getError();
-                GetterCities.cleanError();
-                throw new ResourceNotFoundException(error);
-            }
-            return cities;
-        }else {
-            throw new ResourceNotFoundException("Данные отсутствуют! Выполните GET-запрос " +
-                    "на получение списка стран или сделайте полную выгрузку PUT-запросом");
-        }
+        return GetterCities.getCities(UUID.fromString(countryId), "113", geoClient);
+//        try {
+//            UUID id = UUID.fromString(countryId);
+//        }catch (Exception e){
+//            throw new ResourceNotFoundException("Введенное значение " + countryId + " не соответствует типу UUID!");
+//        }
+//        if (Boolean.TRUE.equals(redisTemplate.hasKey(countryId))){
+//            List<CityDto> cities = (List<CityDto>) redisTemplate.boundListOps(countryId.toString()).leftPop();
+//            log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
+//            return cities;
+//        }else if (Boolean.TRUE.equals(redisTemplate.hasKey(prefixKeyName + countryId))){
+//            IndexCountry index = (IndexCountry) redisTemplate.boundListOps(prefixKeyName + countryId).leftPop();
+//            log.info("Индекс страны с id: {} получен", countryId);
+//
+//            List<CityDto> cities = GetterCities.getCities(UUID.fromString(countryId), index.getIndex(), geoClient);
+//
+//            if (!GetterCities.getError().isEmpty()){
+//                String error = GetterCities.getError();
+//                GetterCities.cleanError();
+//                throw new ResourceNotFoundException(error);
+//            }
+//            return cities;
+//        }else {
+//            throw new ResourceNotFoundException("Данные отсутствуют! Выполните GET-запрос " +
+//                    "на получение списка стран или сделайте полную выгрузку PUT-запросом");
+//        }
     }
 
     @Override
