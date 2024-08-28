@@ -127,7 +127,7 @@ public class GeoServiceImpl implements GeoService{
 
         for (CountryDto countryDto : countries){
             String key = String.valueOf(countryDto.getId());
-            List<CityDto> value = countryDto.getCities();
+            List value = countryDto.getCities();
             saveListInRedis(redisTemplate, key, value);
         }
         log.info("** Завершение загрузки данных ** {}", LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
