@@ -33,6 +33,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         try {
             String stringToken = getToken(request);
+            boolean validate = jwtClient.validateToken(stringToken);
+            log.info(String.valueOf(validate));
             if (jwtClient.validateToken(stringToken)) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         null, null, null
