@@ -31,6 +31,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
+
+        if (requestURI.equals("/prometheus") || requestURI.equals("/actuator/prometheus")) {
+            log.info("Skipping JWT validation for URI: {}", requestURI);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         boolean validateToken;
         try {
             String stringToken = getToken(request);
