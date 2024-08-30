@@ -46,7 +46,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             log.info("Result token verification in mc-post is {}", validateToken);
             if (validateToken) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        "", null, List.of()
+                        "email", null, List.of()
                 );
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
