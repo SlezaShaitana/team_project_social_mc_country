@@ -31,10 +31,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        boolean validate = true;
         try {
             String stringToken = getToken(request);
-            boolean validate = jwtClient.validateToken(stringToken);
-            log.info(String.valueOf(validate));
+             validate = jwtClient.validateToken(stringToken);
             if (jwtClient.validateToken(stringToken)) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         null, null, null
@@ -47,7 +47,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 throw new IllegalArgumentException();
             }
         } catch (Exception e) {
-            log.error("JWT token validation failed: the result of the token verification in mc-post is false");
+//            log.error("JWT token validation failed: the result of the token verification in mc-post is false");
+            log.info(String.valueOf(validate));
         }
         filterChain.doFilter(request, response);
     }
