@@ -34,17 +34,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         try {
             String stringToken = getToken(request);
             if (jwtClient.validateToken(stringToken)) {
-                DecodedToken token = DecodedToken.getDecoded(stringToken);
-
-                String email = token.getEmail();
-                List<String> roles = token.getRoles();
-
-                Collection<? extends GrantedAuthority> authorities = roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        email, null, authorities
+                        null, null, null
                 );
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -54,7 +45,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 throw new IllegalArgumentException();
             }
         } catch (Exception e) {
-            log.error("JWT token validation failed");
+            log.error("JWT token validation failed: the result of the token verification in mc-post is false");
         }
         filterChain.doFilter(request, response);
     }

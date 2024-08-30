@@ -1,10 +1,7 @@
 package com.example.mc_country.response.security;
 
 import com.example.mc_country.feign.JwtClient;
-import com.example.mc_country.security.DecodedToken;
 import com.example.mc_country.services.GeoService;
-import com.example.mc_country.test_utils.StringTestUtils;
-import net.javacrumbs.jsonunit.JsonAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -97,24 +94,6 @@ public class SecurityTest extends AbstractTestForSecurity{
         responseByErrorHeaderType(urlForGetCountries);
         responseByErrorHeaderType(urlForGetCities);
         responseByErrorHeader(urlForLoad);
-    }
-
-
-    @Test
-    @DisplayName("Декодирование токена: верные значения PAYLOAD")
-    public void whenGetStringToken_thenReturnObjectClass() throws Exception{
-        String actualResponse = DecodedToken.getDecoded(normalToken).toString();
-        String expectedResponse = StringTestUtils.readStringFromResource(
-                "response/get_payload_token.json");
-        JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
-    }
-
-    @Test
-    @DisplayName("Декодирование токена: неверные значения PAYLOAD")
-    public void whenGetStringErrorToken_thenReturnObjectClass() throws Exception{
-        String actualResponse = DecodedToken.getDecoded(tokenWithErrorPayload).toString();
-        String expectedResponse = "{}";
-        JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
     }
 
 
