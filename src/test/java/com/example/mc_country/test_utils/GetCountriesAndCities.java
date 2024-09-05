@@ -29,11 +29,13 @@ public abstract class GetCountriesAndCities {
                 List.of(new CityDto(
                         cityOneId,
                         true,
-                        "City " + cityOneId
+                        "City " + cityOneId,
+                        countryOneId
                 ),new CityDto(
                         cityTwoId,
                         true,
-                        "City " + cityTwoId
+                        "City " + cityTwoId,
+                        countryOneId
                 ))
         ));
         countries.add(new CountryDto(
@@ -45,8 +47,8 @@ public abstract class GetCountriesAndCities {
 
         cities = new ArrayList<>();
         cities.add(new CityDto(cityOneId, true,
-                "City " + cityOneId));
+                "City " + cityOneId, countryOneId));
         cities.add(new CityDto(cityTwoId, true,
-                "City " + cityTwoId));
+                "City " + cityTwoId, countryOneId));
     }
 }
