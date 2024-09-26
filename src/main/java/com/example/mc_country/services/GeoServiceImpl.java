@@ -1,18 +1,18 @@
 package com.example.mc_country.services;
 
 import com.example.mc_country.configuration.properties.AppCacheProperties;
-import com.example.mc_country.dto.CityDto;
-import com.example.mc_country.dto.CountryDto;
+import com.example.mc_country.dto.redis.IndexCountry;
+import com.example.mc_country.dto.response.CityDto;
+import com.example.mc_country.dto.response.CountryDto;
+import com.example.mc_country.dto.redis.RedisKeyName;
+import com.example.mc_country.exception.ResourceNotFoundException;
 import com.example.mc_country.feign.GeoClient;
-import com.example.mc_country.utils.FullLoader;
 import com.example.mc_country.utils.GetterCities;
 import com.example.mc_country.utils.GetterCountries;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import ru.yaal.project.hhapi.dictionary.entry.entries.area.Area;
@@ -22,6 +22,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -31,95 +32,121 @@ import java.util.concurrent.ForkJoinPool;
 public class GeoServiceImpl implements GeoService{
 
     private final GeoClient geoClient;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private Map<UUID, String> indexesCountryFromHhApi;
+    private final RedisTemplate redisTemplate;
+    private final String prefixKeyName = "Index_";
 
-    @Resource(name="redisTemplate")
-    private ListOperations<String, List<CountryDto>> listOpsCountry;
-    @Resource(name="redisTemplate")
-    private ListOperations<String, List<CityDto>> listOpsCity;
+
 
     @Override
-    @Cacheable(cacheNames = AppCacheProperties.CacheNames.ALL_COUNTRIES)
     public List<CountryDto> getAllCountries() {
-        log.info("Получен запрос на получение списка стран");
-        GetterCountries.cleanError();
-
-        List<CountryDto> countryDtoList = null; // загрузка данных с redis
-        if (countryDtoList != null){
-            return countryDtoList;
+        String redisKey = String.valueOf(RedisKeyName.Countries_List);
+        Set<String> keys = redisTemplate.keys("*");
+        for (String key : keys){
+            if (key.equals(redisKey)){
+                List<CountryDto> countries = (List<CountryDto>) redisTemplate.boundSetOps(redisKey).pop();
+                log.info("Выгрузка стран из Redis завершилась успешно");
+                return countries;
+            }
         }
 
+        Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
         List<Area> areas;
-        indexesCountryFromHhApi = new HashMap<>();
         try {
             areas = geoClient.getCountries();
         }catch (Exception e){
             e.printStackTrace();
-            log.warn("Данные стран получить невозможно! Error: {}", e.getMessage());
-            return List.of();
+            throw new ResourceNotFoundException("Данные стран c HhApi получить невозможно!" +
+                    " Error: " + e.getMessage());
         }
-        List<CountryDto> countries = new  ForkJoinPool().invoke(new GetterCountries(areas, geoClient, indexesCountryFromHhApi));
 
-        if (GetterCountries.getError() != null){
+        Map<String, IndexCountry> indexes = new HashMap<>();
+        List<CountryDto> countries = new  ForkJoinPool().invoke(
+                new GetterCountries(areas, geoClient, indexes));
+
+        if (!GetterCountries.getError().isEmpty()){
+            String error = GetterCountries.getError();
             GetterCountries.cleanError();
-            return List.of();
+            throw new ResourceNotFoundException(error);
         }
+
+        saveIndexInRedis(indexes);
+        log.info("Запрос на получение списка стран выполнен");
         return countries;
     }
 
     @Override
-    @Cacheable(cacheNames = AppCacheProperties.CacheNames.ALL_CITIES_OF_COUNTRY, key = "#countryId")
-    public List<CityDto> getCitiesOfCountry(UUID countryId) {
-        log.info("Получен запрос на получение списка городов страны c id: {}", countryId);
+    @Cacheable(cacheNames = AppCacheProperties.CacheNames.CITIES_OF_COUNTRY, key = "#countryId")
+    public List<CityDto> getCitiesOfCountry(String countryId) {
+        Set<String> keys = redisTemplate.keys("*");
+        for (String key : keys){
+            if (key.equals(countryId)){
+                List<CityDto> cities = (List<CityDto>) redisTemplate.boundSetOps(prefixKeyName + countryId).pop();
+                log.info("Выгрузка городов страны с id: {} из Redis завершилась успешно", countryId);
+                return cities;
+            }else if (key.equals(prefixKeyName + countryId)){
+                IndexCountry index = (IndexCountry) redisTemplate.boundSetOps(prefixKeyName + countryId).pop();
+                log.info("Индекс страны с id: {} получен", countryId);
 
-        List<CityDto> cities = null; // загрузка данных с redis
-        if (cities != null){
-            return cities;
-        }
+                List<CityDto> cities = GetterCities.getCities(countryId, index.getIndex(), geoClient);
 
-        if (indexesCountryFromHhApi == null){
-            log.warn("Не выполнен запрос на получение списка стран! Данные отсутствуют!");
-            return List.of();
+                if (!GetterCities.getError().isEmpty()){
+                    String error = GetterCities.getError();
+                    GetterCities.cleanError();
+                    throw new ResourceNotFoundException(error);
+                }
+                return cities;
+            }
         }
-        String indexFromHhApi = indexesCountryFromHhApi.get(countryId);
-        if (indexFromHhApi == null){
-            log.warn("Страна с введенным параметром id: {} не найдена!", countryId);
-            return List.of();
-        }else {
-            return GetterCities.getCities(countryId, indexFromHhApi, geoClient);
-        }
+        return null;
     }
 
     @Override
     public String uploadData() {
         Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
-        indexesCountryFromHhApi = null;
-
         log.info("** Старт загрузки данных ** {}", LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
 
-        List<Area> areas = geoClient.getCountries();
-
-        Map<UUID, List<CityDto>> citiesOfCountryMap = new HashMap<>();
-        List<CountryDto> countries = new ForkJoinPool().invoke(new FullLoader(areas, geoClient, citiesOfCountryMap));
-
-        String errorResult = "Данные не загружены!";
-        if (countries.isEmpty()){
-            return errorResult;
+        List<Area> areas;
+        try {
+            areas = geoClient.getCountries();
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ResourceNotFoundException("Данные стран c HhApi получить невозможно!" +
+                    " Error: " + e.getMessage());
         }
 
-        if (FullLoader.getError() == null){
-            listOpsCountry.leftPush("Countries" , countries);
-            for (Map.Entry entry : citiesOfCountryMap.entrySet()){
-                List<CityDto> cities = (List<CityDto>) entry.getValue();
-                listOpsCity.leftPush(entry.getKey().toString(), cities);
-            }
-            log.info("** Завершение загрузки данных ** {}", LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
-            return "";
-        }else {
-            log.warn("Данные не загружены или загружены не в полном объеме!");
-            FullLoader.cleanError();
-            return errorResult;
+        Map<String, IndexCountry> indexes = new HashMap<>();
+        List<CountryDto> countries = new  ForkJoinPool().invoke(
+                new GetterCountries(areas, geoClient, indexes));
+        if (!GetterCountries.getError().isEmpty()){
+            String error = GetterCountries.getError();
+            GetterCountries.cleanError();
+            throw new ResourceNotFoundException(error);
+        }
+
+        saveListInRedis(redisTemplate, String.valueOf(RedisKeyName.Countries_List), countries);
+
+        for (CountryDto countryDto : countries){
+            String key = String.valueOf(countryDto.getId());
+            List<CityDto> value = countryDto.getCities();
+            saveListInRedis(redisTemplate, key, value);
+        }
+        log.info("** Завершение загрузки данных ** {}", LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
+        return "";
+    }
+
+
+    private void saveListInRedis(RedisTemplate redisTemplate, String keyName, List data){
+        String redisKey = String.valueOf(keyName);
+        redisTemplate.opsForSet().add(redisKey,data);
+        redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
+    }
+
+    private void saveIndexInRedis(Map<String, IndexCountry> indexes){
+        for (Map.Entry index : indexes.entrySet()){
+            String key = prefixKeyName + index.getKey();
+            IndexCountry value = (IndexCountry) index.getValue();
+            redisTemplate.opsForSet().add(key,value);
+            redisTemplate.expire(key, 1, TimeUnit.DAYS);
         }
     }
 }

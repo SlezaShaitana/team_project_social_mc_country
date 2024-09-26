@@ -22,7 +22,6 @@ public class AppCacheProperties {
     }
 
     public interface CacheNames{
-        String ALL_COUNTRIES = "allCountries";
-        String ALL_CITIES_OF_COUNTRY = "allCitiesOfCountry";
+        String CITIES_OF_COUNTRY = "citiesOfCountry";
     }
 }
